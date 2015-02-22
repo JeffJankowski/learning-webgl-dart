@@ -356,6 +356,6 @@ class Lesson04 {
 }
 
 void main() {
-  Lesson04 lesson = new Lesson04(document.query('#drawHere'));
+  Lesson04 lesson = new Lesson04(document.querySelector('#drawHere'));
   lesson.start();
 }
