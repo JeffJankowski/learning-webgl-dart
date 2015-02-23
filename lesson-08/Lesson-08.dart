@@ -12,7 +12,8 @@ import 'dart:math' as math;
  * based on:
  * http://learningwebgl.com/blog/?p=571
  *
- * NOTE: To run this example you have to open in on a webserver (url starting with http:// NOT file:///)!
+ * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
+ *       Running from Firefox or Dartium's local server will work as well.
  */
 class Lesson08 {
 
@@ -53,9 +54,9 @@ class Lesson08 {
   InputElement _elmDirectionalR, _elmDirectionalG, _elmDirectionalB;
 
   double _xRot = 0.0,
-      _xSpeed = 0.0,
+      _xSpeed = 3.0,
       _yRot = 0.0,
-      _ySpeed = 0.0,
+      _ySpeed = -3.0,
       _zPos = -5.0;
 
   int _filter = 0;
@@ -295,13 +296,13 @@ class Lesson08 {
     _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
     _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
 
-    //Matrix3 normalMatrix = _mvMatrix.toInverseMat3();
     Matrix3 normalMatrix = _mvMatrix.getRotation();
+    normalMatrix.invert();
     normalMatrix.transpose();
     _gl.uniformMatrix3fv(_uNMatrix, false, normalMatrix.storage);
   }
 
-  bool render(double time) {
+  void render(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -315,7 +316,6 @@ class Lesson08 {
 
     _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot));
     _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot));
-    //_mvMatrix.rotate(_degToRad(_zRot), new Vector3.fromList([0, 0, 1]));
 
     // vertices
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
@@ -350,14 +350,25 @@ class Lesson08 {
     _gl.uniform1i(_uUseLighting, _elmLighting.checked ? 1 : 0); // must be int, not bool
     if (_elmLighting.checked) {
 
-      _gl.uniform3f(_uAmbientColor, _elmAmbientR.valueAsNumber / 100, _elmAmbientG.valueAsNumber / 100, _elmAmbientB.valueAsNumber / 100);
+      _gl.uniform3f(
+          _uAmbientColor,
+          double.parse(_elmAmbientR.value, (s) => 0.2),
+          double.parse(_elmAmbientG.value, (s) => 0.2),
+          double.parse(_elmAmbientB.value, (s) => 0.2));
 
-      Vector3 lightingDirection = new Vector3(_elmLightDirectionX.valueAsNumber / 100, _elmLightDirectionY.valueAsNumber / 100, _elmLightDirectionZ.valueAsNumber / 100);
+      Vector3 lightingDirection = new Vector3(
+          double.parse(_elmLightDirectionX.value, (s) => -0.25),
+          double.parse(_elmLightDirectionY.value, (s) => -0.25),
+          double.parse(_elmLightDirectionZ.value, (s) => -1.0));
       Vector3 adjustedLD = lightingDirection.normalize();
-      //adjustedLD.scale(-1.0);
+      adjustedLD.scale(-1.0);
       _gl.uniform3fv(_uLightingDirection, adjustedLD.storage);
       
-      _gl.uniform3f(_uDirectionalColor, _elmDirectionalR.valueAsNumber / 100, _elmDirectionalG.valueAsNumber / 100, _elmDirectionalB.valueAsNumber / 100);
+      _gl.uniform3f(
+          _uDirectionalColor,
+          double.parse(_elmDirectionalR.value, (s) => 0.8),
+          double.parse(_elmDirectionalG.value, (s) => 0.8),
+          double.parse(_elmDirectionalB.value, (s) => 0.8));
     }
 
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _cubeVertexIndexBuffer);

@@ -4,8 +4,15 @@
     <title>Lesson 06 - Dart + WebGL</title>
   </head>
   <body>
-  	<p>NOTE: To run this example you have to open in on a webserver (url starting with http:// NOT file:///)!</p>
-    <canvas id="drawHere" width="400" height="400"></canvas>
+    <canvas id="drawHere" width="500" height="500"></canvas>
+
+    <h2>Controls:</h2>
+
+    <ul>
+      <li><code>Page Up</code>/<code>Page Down</code> to zoom out/in
+      <li>Cursor keys: make the cube rotate (the longer you hold down a cursor key, the more it accelerates)
+      <li><code>F</code> to toggle through three different kinds of texture filters
+    </ul>
     
     <script type="application/dart" src="Lesson-06.dart"></script>
     <script src="packages/browser/dart.js"></script>

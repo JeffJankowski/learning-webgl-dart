@@ -12,7 +12,8 @@ import 'dart:math' as math;
  * based on:
  * http://learningwebgl.com/blog/?p=571
  *
- * NOTE: To run this example you have to open in on a webserver (url starting with http:// NOT file:///)!
+ * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
+ *       Running from Firefox or Dartium's local server will work as well.
  */
 class Lesson06 {
 

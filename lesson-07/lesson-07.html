@@ -4,24 +4,40 @@
 	<title>Lesson 07 - Dart + WebGL</title>
 </head>
 <body>
-<p>NOTE: To run this example you have to open in on a webserver (url starting with http:// NOT file:///)!</p>
-<canvas id="drawHere" width="400" height="400"></canvas>
+<canvas id="drawHere" width="500" height="500"></canvas><br/>
 
-<p>
-	<input type="checkbox" id="lighting" checked><label for="lighting">Use lighting</label><br>
+<input type="checkbox" id="lighting" checked><label for="lighting">Use lighting</label><br/>
+(Use cursor keys to spin the box and <code>Page Up</code>/<code>Page Down</code> to zoom out/in)
 
-	<input type="range" id="ambientR" min="0" max="100"><label for="ambientR">Ambient red</label><br>
-	<input type="range" id="ambientG" min="0" max="100"><label for="ambientG">Ambient green</label><br>
-	<input type="range" id="ambientB" min="0" max="100"><label for="ambientB">Ambient blue</label><br>
+<br/>
 
-	<input type="range" id="lightDirectionX" min="0" max="100"><label for="lightDirectionX">Light direct x</label><br>
-	<input type="range" id="lightDirectionY" min="0" max="100"><label for="lightDirectionY">Light direction y</label><br>
-	<input type="range" id="lightDirectionZ" min="0" max="100"><label for="lightDirectionZ">Light direction z</label><br>
+<h2>Directional light:</h2>
 
-	<input type="range" id="directionalR" min="0" max="100"><label for="directionalR">Directional light red</label><br>
-	<input type="range" id="directionalG" min="0" max="100"><label for="directionalG">Directional light green</label><br>
-	<input type="range" id="directionalB" min="0" max="100"><label for="directionalB">Directional light blu</label><br>
-</p>
+<table style="border: 0; padding: 10px;">
+	<tr>
+		<td><b>Direction:</b>
+		<td><label for="lightDirectionX">X: </label><input type="text" id="lightDirectionX" value="-0.25" />
+		<td><label for="lightDirectionY">Y: </label><input type="text" id="lightDirectionY" value="-0.25" />
+		<td><label for="lightDirectionZ">Z: </label><input type="text" id="lightDirectionZ" value="-1.0" />
+	</tr>
+	<tr>
+		<td><b>Colour:</b>
+		<td><label for="directionalR">R: </label><input type="text" id="directionalR" value="0.8" />
+		<td><label for="directionalG">G: </label><input type="text" id="directionalG" value="0.8" />
+		<td><label for="directionalB">B: </label><input type="text" id="directionalB" value="0.8" />
+	</tr>
+</table>
+
+<h2>Ambient light:</h2>
+
+<table style="border: 0; padding: 10px;">
+	<tr>
+		<td><b>Colour:</b>
+		<td><label for="ambientR">R: </label><input type="text" id="ambientR" value="0.2" />
+		<td><label for="ambientG">G: </label><input type="text" id="ambientG" value="0.2" />
+		<td><label for="ambientB">B: </label><input type="text" id="ambientB" value="0.2" />
+	</tr>
+</table>
 
 <script type="application/dart" src="Lesson-07.dart"></script>
 <script src="packages/browser/dart.js"></script>

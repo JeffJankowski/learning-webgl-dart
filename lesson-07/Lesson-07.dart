@@ -12,7 +12,8 @@ import 'dart:math' as math;
  * based on:
  * http://learningwebgl.com/blog/?p=571
  *
- * NOTE: To run this example you have to open in on a webserver (url starting with http:// NOT file:///)!
+ * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
+ *       Running from Firefox or Dartium's local server will work as well.
  */
 class Lesson07 {
 
@@ -50,17 +51,14 @@ class Lesson07 {
   InputElement _elmDirectionalR, _elmDirectionalG, _elmDirectionalB;
 
   double _xRot = 0.0,
-      _xSpeed = 0.0,
+      _xSpeed = 3.0,
       _yRot = 0.0,
-      _ySpeed = 0.0,
+      _ySpeed = -3.0,
       _zPos = -5.0;
 
-  int _filter = 0;
   double _lastTime = 0.0;
 
   List<bool> _currentlyPressedKeys;
-
-  var _requestAnimationFrame;
 
 
   Lesson07(CanvasElement canvas) {
@@ -239,14 +237,14 @@ class Lesson07 {
 
     _cubeVertexIndexBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _cubeVertexIndexBuffer);
-    List<int> _cubeVertexIndices = [0, 1, 2, 0, 2, 3, // Front face
+    List<int> cubeVertexIndices = [0, 1, 2, 0, 2, 3, // Front face
       4, 5, 6, 4, 6, 7, // Back face
       8, 9, 10, 8, 10, 11, // Top face
       12, 13, 14, 12, 14, 15, // Bottom face
       16, 17, 18, 16, 18, 19, // Right face
       20, 21, 22, 20, 22, 23 // Left face
     ];
-    _gl.bufferData(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(_cubeVertexIndices), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(cubeVertexIndices), webgl.RenderingContext.STATIC_DRAW);
 
 
     _cubeVertexNormalBuffer = _gl.createBuffer();
@@ -287,13 +285,13 @@ class Lesson07 {
     _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
     _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
 
-    //Matrix3 normalMatrix = _mvMatrix.toInverseMat3();
     Matrix3 normalMatrix = _mvMatrix.getRotation();
+    normalMatrix.invert();
     normalMatrix.transpose();
     _gl.uniformMatrix3fv(_uNMatrix, false, normalMatrix.storage);
   }
 
-  bool render(double time) {
+  void render(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -307,38 +305,46 @@ class Lesson07 {
 
     _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot));
     _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot));
-    //_mvMatrix.rotate(_degToRad(_zRot), new Vector3.fromList([0, 0, 1]));
 
-    // verticies
+    // vertices
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
-
-    // texture
-    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
-    _gl.vertexAttribPointer(_aTextureCoord, 2, webgl.RenderingContext.FLOAT, false, 0, 0);
 
     // light
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexNormalBuffer);
     _gl.vertexAttribPointer(_aVertexNormal, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
 
+    // texture
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
+    _gl.vertexAttribPointer(_aTextureCoord, 2, webgl.RenderingContext.FLOAT, false, 0, 0);
 
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _texture);
-    //_gl.uniform1i(_uSamplerUniform, 0);
+    _gl.uniform1i(_uSampler, 0);
 
     // draw lighting?
     _gl.uniform1i(_uUseLighting, _elmLighting.checked ? 1 : 0); // must be int, not bool
-
     if (_elmLighting.checked) {
 
-      _gl.uniform3f(_uAmbientColor, _elmAmbientR.valueAsNumber / 100, _elmAmbientG.valueAsNumber / 100, _elmAmbientB.valueAsNumber / 100);
+      _gl.uniform3f(
+          _uAmbientColor,
+          double.parse(_elmAmbientR.value, (s) => 0.2),
+          double.parse(_elmAmbientG.value, (s) => 0.2),
+          double.parse(_elmAmbientB.value, (s) => 0.2));
 
-      Vector3 lightingDirection = new Vector3(_elmLightDirectionX.valueAsNumber / 100, _elmLightDirectionY.valueAsNumber / 100, _elmLightDirectionZ.valueAsNumber / 100);
+      Vector3 lightingDirection = new Vector3(
+          double.parse(_elmLightDirectionX.value, (s) => -0.25),
+          double.parse(_elmLightDirectionY.value, (s) => -0.25),
+          double.parse(_elmLightDirectionZ.value, (s) => -1.0));
       Vector3 adjustedLD = lightingDirection.normalize();
-      //adjustedLD.scale(-1.0);
+      adjustedLD.scale(-1.0);
       _gl.uniform3fv(_uLightingDirection, adjustedLD.storage);
-      
-      _gl.uniform3f(_uDirectionalColor, _elmDirectionalR.valueAsNumber / 100, _elmDirectionalG.valueAsNumber / 100, _elmDirectionalB.valueAsNumber / 100);
+
+      _gl.uniform3f(
+          _uDirectionalColor,
+          double.parse(_elmDirectionalR.value, (s) => 0.8),
+          double.parse(_elmDirectionalG.value, (s) => 0.8),
+          double.parse(_elmDirectionalB.value, (s) => 0.8));
     }
 
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _cubeVertexIndexBuffer);

@@ -337,7 +337,7 @@ class Lesson04 {
     // rotate
     double animationStep = time - _lastTime;
     _rPyramid += (90 * animationStep) / 1000.0;
-    _rCube += (75 * animationStep) / 1000.0;
+    _rCube -= (75 * animationStep) / 1000.0;
     _lastTime = time;
 
     // keep drawing
