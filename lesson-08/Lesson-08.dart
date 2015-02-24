@@ -10,7 +10,7 @@ import 'dart:math' as math;
 
 /**
  * based on:
- * http://learningwebgl.com/blog/?p=571
+ * http://learningwebgl.com/blog/?p=859
  *
  * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
  *       Running from Firefox or Dartium's local server will work as well.
@@ -59,12 +59,8 @@ class Lesson08 {
       _ySpeed = -3.0,
       _zPos = -5.0;
 
-  int _filter = 0;
   double _lastTime = 0.0;
-
   List<bool> _currentlyPressedKeys;
-
-  var _requestAnimationFrame;
 
 
   Lesson08(CanvasElement canvas) {
@@ -80,15 +76,6 @@ class Lesson08 {
     _initShaders();
     _initBuffers();
     _initTexture();
-
-    /*if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['mozRequestAnimationFrame']) {
-      _requestAnimationFrame = window.mozRequestAnimationFrame;
-    }*/
-    //_requestAnimationFrame = window.requestAnimationFrame;
 
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.enable(webgl.RenderingContext.DEPTH_TEST);

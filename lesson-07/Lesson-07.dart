@@ -10,7 +10,7 @@ import 'dart:math' as math;
 
 /**
  * based on:
- * http://learningwebgl.com/blog/?p=571
+ * http://learningwebgl.com/blog/?p=684
  *
  * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
  *       Running from Firefox or Dartium's local server will work as well.
@@ -57,7 +57,6 @@ class Lesson07 {
       _zPos = -5.0;
 
   double _lastTime = 0.0;
-
   List<bool> _currentlyPressedKeys;
 
 
