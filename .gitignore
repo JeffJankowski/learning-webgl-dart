@@ -4,3 +4,4 @@ packages
 .settings
 pubspec.lock
 .DS_Store
+/.idea
