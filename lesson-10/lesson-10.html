@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lesson 10 - Dart + WebGL</title>
+
+    <style type="text/css">
+        #loadingtext {
+            position:absolute;
+            top:250px;
+            left:150px;
+            font-size:2em;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<canvas id="drawHere" width="500" height="500"></canvas><br/>
+
+<div id="loadingtext">Loading world...</div>
+
+<br/>
+Use the cursor keys or WASD to run around, and <code>Page Up</code>/<code>Page Down</code> to
+look up and down.
+
+<script type="application/dart" src="Lesson-10.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>
