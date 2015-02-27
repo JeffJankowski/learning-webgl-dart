@@ -1,5 +1,6 @@
 ### Dart WebGL Tutorials
 
-Ported tutorials from [learningwebgl.com](http://www.learningwebgl.com)
+Tutorials from [learningwebgl.com](http://www.learningwebgl.com) are being ported from JavaScript to Dart.
 
 Taking over where [Martin Sikora](https://github.com/martinsik) left off to further my knowledge of Dart and WebGL.
+The original repo can be found [here](https://github.com/martinsik/dart-webgl-tutorials), but only lessons 1-6 are functional.
