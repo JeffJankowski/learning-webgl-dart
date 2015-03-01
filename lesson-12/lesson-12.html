@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lesson 12 - Dart + WebGL</title>
+</head>
+<body>
+<canvas id="drawHere" width="500" height="500"></canvas><br/>
+
+<input type="checkbox" id="lighting" checked /><label for="lighting"> Use lighting</label><br/>
+<br/>
+
+<h2>Point light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Location:</b>
+        <td><label for="lightPositionX">X: </label><input type="text" id="lightPositionX" value="0.0" />
+        <td><label for="lightPositionY">Y: </label><input type="text" id="lightPositionY" value="0.0" />
+        <td><label for="lightPositionZ">Z: </label><input type="text" id="lightPositionZ" value="-20.0" />
+    </tr>
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="pointR">R: </label><input type="text" id="pointR" value="0.8" />
+        <td><label for="pointG">G: </label><input type="text" id="pointG" value="0.8" />
+        <td><label for="pointB">B: </label><input type="text" id="pointB" value="0.8" />
+    </tr>
+</table>
+
+<h2>Ambient light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="ambientR">R: </label><input type="text" id="ambientR" value="0.2" />
+        <td><label for="ambientG">G: </label><input type="text" id="ambientG" value="0.2" />
+        <td><label for="ambientB">B: </label><input type="text" id="ambientB" value="0.2" />
+    </tr>
+</table>
+<br/>
+
+Moon texture courtesy of <a href="http://maps.jpl.nasa.gov/">the Jet Propulsion Laboratory</a>.
+<br/>
+<br/>
+
+
+<script type="application/dart" src="Lesson-12.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>

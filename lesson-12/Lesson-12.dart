@@ -1,4 +1,4 @@
-library lesson11;
+library lesson12;
 
 import 'dart:html';
 import 'package:vector_math/vector_math.dart';
@@ -10,23 +10,23 @@ import 'dart:math' as math;
 
 /**
  * based on:
- * http://learningwebgl.com/blog/?p=1253
+ * http://learningwebgl.com/blog/?p=1359
  *
  * NOTE: Need to run from web server when using Chrome due to cross-site security issues loading texture images.
  *       Running from Firefox or Dartium's local server will work as well.
  */
-class Lesson11 {
+class Lesson12 {
 
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
 
-  webgl.Texture _texture;
+  webgl.Texture _moonTexture, _cubeTexture;
 
-  webgl.Buffer _moonVertexTextureCoordBuffer;
-  webgl.Buffer _moonVertexPositionBuffer;
-  webgl.Buffer _moonVertexNormalBuffer;
-  webgl.Buffer _moonVertexIndexBuffer;
+  webgl.Buffer _moonVertexTextureCoordBuffer, _cubeVertexTextureCoordBuffer;
+  webgl.Buffer _moonVertexPositionBuffer, _cubeVertexPositionBuffer;
+  webgl.Buffer _moonVertexNormalBuffer, _cubeVertexNormalBuffer;
+  webgl.Buffer _moonVertexIndexBuffer, _cubeVertexIndexBuffer;
 
   Matrix4 _pMatrix;
   Matrix4 _mvMatrix;
@@ -42,30 +42,27 @@ class Lesson11 {
   webgl.UniformLocation _uSampler;
   webgl.UniformLocation _uColor;
   webgl.UniformLocation _uUseLighting;
-  webgl.UniformLocation _uLightingDirection;
+  webgl.UniformLocation _uPointLightingLocation;
   webgl.UniformLocation _uAmbientColor;
-  webgl.UniformLocation _uDirectionalColor;
+  webgl.UniformLocation _uPointLightingColor;
 
   InputElement _elmLighting;
   InputElement _elmAmbientR, _elmAmbientG, _elmAmbientB;
-  InputElement _elmLightDirectionX, _elmLightDirectionY, _elmLightDirectionZ;
-  InputElement _elmDirectionalR, _elmDirectionalG, _elmDirectionalB;
+  InputElement _elmLightPositionX, _elmLightPositionY, _elmLightPositionZ;
+  InputElement _elmPointR, _elmPointG, _elmPointB;
 
   double _lastTime = 0.0;
-  int _vertexCount = 0;
+  int _moonVertexCount = 0, _cubeVertexCount = 0;
 
   static const int _latitudeBands = 30;
   static const int _longitudeBands = 30;
   static const int _radius = 2;
 
-  bool _mouseDown = false;
-  int _lastMouseX;
-  int _lastMouseY;
-
-  Matrix4 _moonRotationMatrix;
+  double _moonAngle = 180.0;
+  double _cubeAngle = 0.0;
 
 
-  Lesson11(CanvasElement canvas) {
+  Lesson12(CanvasElement canvas) {
     _viewportWidth = canvas.width;
     _viewportHeight = canvas.height;
     _gl = canvas.getContext("experimental-webgl");
@@ -74,8 +71,6 @@ class Lesson11 {
     _mvMatrixStack = new Queue<Matrix4>();
     _pMatrix = new Matrix4.identity();
 
-    _moonRotationMatrix = new Matrix4.identity();
-
     _initShaders();
     _initBuffers();
     _initTexture();
@@ -83,20 +78,16 @@ class Lesson11 {
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.enable(webgl.RenderingContext.DEPTH_TEST);
 
-    canvas.onMouseDown.listen(this._handleMouseDown);
-    document.onMouseUp.listen(this._handleMouseUp);
-    document.onMouseMove.listen(this._handleMouseMove);
-
     _elmLighting = document.querySelector("#lighting");
     _elmAmbientR = document.querySelector("#ambientR");
     _elmAmbientG = document.querySelector("#ambientG");
     _elmAmbientB = document.querySelector("#ambientB");
-    _elmLightDirectionX = document.querySelector("#lightDirectionX");
-    _elmLightDirectionY = document.querySelector("#lightDirectionY");
-    _elmLightDirectionZ = document.querySelector("#lightDirectionZ");
-    _elmDirectionalR = document.querySelector("#directionalR");
-    _elmDirectionalG = document.querySelector("#directionalG");
-    _elmDirectionalB = document.querySelector("#directionalB");
+    _elmLightPositionX = document.querySelector("#lightPositionX");
+    _elmLightPositionY = document.querySelector("#lightPositionY");
+    _elmLightPositionZ = document.querySelector("#lightPositionZ");
+    _elmPointR = document.querySelector("#pointR");
+    _elmPointG = document.querySelector("#pointG");
+    _elmPointB = document.querySelector("#pointB");
   }
 
 
@@ -114,8 +105,8 @@ class Lesson11 {
 
     uniform vec3 uAmbientColor;
 
-    uniform vec3 uLightingDirection;
-    uniform vec3 uDirectionalColor;
+    uniform vec3 uPointLightingLocation;
+    uniform vec3 uPointLightingColor;
 
     uniform bool uUseLighting;
 
@@ -123,15 +114,18 @@ class Lesson11 {
     varying vec3 vLightWeighting;
 
     void main(void) {
-        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vec4 mvPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
+        gl_Position = uPMatrix * mvPosition;
         vTextureCoord = aTextureCoord;
 
         if (!uUseLighting) {
             vLightWeighting = vec3(1.0, 1.0, 1.0);
         } else {
+            vec3 lightDirection = normalize(uPointLightingLocation - mvPosition.xyz);
+
             vec3 transformedNormal = uNMatrix * aVertexNormal;
-            float directionalLightWeighting = max(dot(transformedNormal, uLightingDirection), 0.0);
-            vLightWeighting = uAmbientColor + uDirectionalColor * directionalLightWeighting;
+            float directionalLightWeighting = max(dot(transformedNormal, lightDirection), 0.0);
+            vLightWeighting = uAmbientColor + uPointLightingColor * directionalLightWeighting;
         }
     }
     """;
@@ -202,18 +196,25 @@ class Lesson11 {
     _uSampler = _gl.getUniformLocation(_shaderProgram, "uSampler");
     _uUseLighting = _gl.getUniformLocation(_shaderProgram, "uUseLighting");
     _uAmbientColor = _gl.getUniformLocation(_shaderProgram, "uAmbientColor");
-    _uLightingDirection = _gl.getUniformLocation(_shaderProgram, "uLightingDirection");
-    _uDirectionalColor = _gl.getUniformLocation(_shaderProgram, "uDirectionalColor");
+    _uPointLightingLocation = _gl.getUniformLocation(_shaderProgram, "uPointLightingLocation");
+    _uPointLightingColor = _gl.getUniformLocation(_shaderProgram, "uPointLightingColor");
   }
 
 
   void _initTexture() {
-    _texture = _gl.createTexture();
-    ImageElement image = new Element.tag('img');
-    image.onLoad.listen((e) {
-      _handleLoadedTexture(_texture, image);
+    _moonTexture = _gl.createTexture();
+    ImageElement moonImage = new Element.tag('img');
+    moonImage.onLoad.listen((e) {
+      _handleLoadedTexture(_moonTexture, moonImage);
     });
-    image.src = "./moon.gif";
+    moonImage.src = "./moon.gif";
+
+    _cubeTexture = _gl.createTexture();
+    ImageElement cubeImage = new Element.tag('img');
+    cubeImage.onLoad.listen((e) {
+      _handleLoadedTexture(_cubeTexture, cubeImage);
+    });
+    cubeImage.src = "./crate.gif";
   }
 
   void _mvPushMatrix() {
@@ -250,40 +251,144 @@ class Lesson11 {
     _gl.uniformMatrix3fv(_uNMatrix, false, normalMatrix.storage);
   }
 
-  void _handleMouseDown(MouseEvent event) {
-    _mouseDown = true;
-    _lastMouseX = event.client.x;
-    _lastMouseY = event.client.y;
-  }
-
-  void _handleMouseUp(MouseEvent event) {
-    _mouseDown = false;
-  }
-
-  void _handleMouseMove(MouseEvent event) {
-    if (!_mouseDown) {
-      return;
-    }
-
-    int newX = event.client.x;
-    int newY = event.client.y;
-
-    int deltaX = newX - _lastMouseX;
-    Matrix4 newRotationMatrix = new Matrix4.identity();
-    newRotationMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(deltaX / 10.0));
-
-    int deltaY = newY - _lastMouseY;
-    newRotationMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(deltaY / 10.0));
-
-    // Gotcha here: matrix multiplication is NOT commutative, we need to multiply newRotationMatrix by _moonRotationMatrix
-    // This will modify newRotationMatrix, but we don't care, just store the result to the global rotation matrix
-    _moonRotationMatrix = newRotationMatrix.multiply(_moonRotationMatrix);
-
-    _lastMouseX = newX;
-    _lastMouseY = newY;
-  }
-
   void _initBuffers() {
+    _cubeVertexPositionBuffer = _gl.createBuffer();
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
+    List<double> vertices = [
+        // Front face
+        -1.0, -1.0,  1.0,
+        1.0, -1.0,  1.0,
+        1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0,
+
+        // Back face
+        -1.0, -1.0, -1.0,
+        -1.0,  1.0, -1.0,
+        1.0,  1.0, -1.0,
+        1.0, -1.0, -1.0,
+
+        // Top face
+        -1.0,  1.0, -1.0,
+        -1.0,  1.0,  1.0,
+        1.0,  1.0,  1.0,
+        1.0,  1.0, -1.0,
+
+        // Bottom face
+        -1.0, -1.0, -1.0,
+        1.0, -1.0, -1.0,
+        1.0, -1.0,  1.0,
+        -1.0, -1.0,  1.0,
+
+        // Right face
+        1.0, -1.0, -1.0,
+        1.0,  1.0, -1.0,
+        1.0,  1.0,  1.0,
+        1.0, -1.0,  1.0,
+
+        // Left face
+        -1.0, -1.0, -1.0,
+        -1.0, -1.0,  1.0,
+        -1.0,  1.0,  1.0,
+        -1.0,  1.0, -1.0
+    ];
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(vertices), webgl.RenderingContext.STATIC_DRAW);
+
+    _cubeVertexNormalBuffer = _gl.createBuffer();
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexNormalBuffer);
+    List<double> vertexNormals = [
+        // Front face
+        0.0,  0.0,  1.0,
+        0.0,  0.0,  1.0,
+        0.0,  0.0,  1.0,
+        0.0,  0.0,  1.0,
+
+        // Back face
+        0.0,  0.0, -1.0,
+        0.0,  0.0, -1.0,
+        0.0,  0.0, -1.0,
+        0.0,  0.0, -1.0,
+
+        // Top face
+        0.0,  1.0,  0.0,
+        0.0,  1.0,  0.0,
+        0.0,  1.0,  0.0,
+        0.0,  1.0,  0.0,
+
+        // Bottom face
+        0.0, -1.0,  0.0,
+        0.0, -1.0,  0.0,
+        0.0, -1.0,  0.0,
+        0.0, -1.0,  0.0,
+
+        // Right face
+        1.0,  0.0,  0.0,
+        1.0,  0.0,  0.0,
+        1.0,  0.0,  0.0,
+        1.0,  0.0,  0.0,
+
+        // Left face
+        -1.0,  0.0,  0.0,
+        -1.0,  0.0,  0.0,
+        -1.0,  0.0,  0.0,
+        -1.0,  0.0,  0.0,
+    ];
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(vertexNormals), webgl.RenderingContext.STATIC_DRAW);
+
+    _cubeVertexTextureCoordBuffer = _gl.createBuffer();
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
+    var textureCoords = [
+        // Front face
+        0.0, 0.0,
+        1.0, 0.0,
+        1.0, 1.0,
+        0.0, 1.0,
+
+        // Back face
+        1.0, 0.0,
+        1.0, 1.0,
+        0.0, 1.0,
+        0.0, 0.0,
+
+        // Top face
+        0.0, 1.0,
+        0.0, 0.0,
+        1.0, 0.0,
+        1.0, 1.0,
+
+        // Bottom face
+        1.0, 1.0,
+        0.0, 1.0,
+        0.0, 0.0,
+        1.0, 0.0,
+
+        // Right face
+        1.0, 0.0,
+        1.0, 1.0,
+        0.0, 1.0,
+        0.0, 0.0,
+
+        // Left face
+        0.0, 0.0,
+        1.0, 0.0,
+        1.0, 1.0,
+        0.0, 1.0,
+    ];
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(textureCoords), webgl.RenderingContext.STATIC_DRAW);
+
+    _cubeVertexIndexBuffer = _gl.createBuffer();
+    _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _cubeVertexIndexBuffer);
+    List<int> cubeVertexIndices = [
+        0, 1, 2,      0, 2, 3,    // Front face
+        4, 5, 6,      4, 6, 7,    // Back face
+        8, 9, 10,     8, 10, 11,  // Top face
+        12, 13, 14,   12, 14, 15, // Bottom face
+        16, 17, 18,   16, 18, 19, // Right face
+        20, 21, 22,   20, 22, 23  // Left face
+    ];
+    _gl.bufferData(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(cubeVertexIndices), webgl.RenderingContext.STATIC_DRAW);
+    _cubeVertexCount = cubeVertexIndices.length;
+
+
     List<double> vertexPositionData = [];
     List<double> normalData = [];
     List<double> textureCoordData = [];
@@ -328,7 +433,7 @@ class Lesson11 {
         indexData.add(second + 1);
         indexData.add(first + 1);
 
-        _vertexCount+=6;
+        _moonVertexCount+=6;
       }
     }
 
@@ -367,29 +472,27 @@ class Lesson11 {
           double.parse(_elmAmbientG.value, (s) => 0.2),
           double.parse(_elmAmbientB.value, (s) => 0.2));
 
-      Vector3 lightingDirection = new Vector3(
-          double.parse(_elmLightDirectionX.value, (s) => -1.0),
-          double.parse(_elmLightDirectionY.value, (s) => -1.0),
-          double.parse(_elmLightDirectionZ.value, (s) => -1.0));
-      Vector3 adjustedLD = lightingDirection.normalize();
-      adjustedLD.scale(-1.0);
-      _gl.uniform3fv(_uLightingDirection, adjustedLD.storage);
+      _gl.uniform3f(_uPointLightingLocation,
+          double.parse(_elmLightPositionX.value, (s) => 0.0),
+          double.parse(_elmLightPositionY.value, (s) => 0.0),
+          double.parse(_elmLightPositionZ.value, (s) => -20.0));
 
       _gl.uniform3f(
-          _uDirectionalColor,
-          double.parse(_elmDirectionalR.value, (s) => 0.8),
-          double.parse(_elmDirectionalG.value, (s) => 0.8),
-          double.parse(_elmDirectionalB.value, (s) => 0.8));
+          _uPointLightingColor,
+          double.parse(_elmPointR.value, (s) => 0.8),
+          double.parse(_elmPointG.value, (s) => 0.8),
+          double.parse(_elmPointB.value, (s) => 0.8));
     }
 
     _mvMatrix = new Matrix4.identity();
 
-    _mvMatrix.translate(0.0, 0.0, -6.0);
+    _mvMatrix.translate(0.0, 0.0, -20.0);
 
-    _mvMatrix.multiply(_moonRotationMatrix);
-
+    _mvPushMatrix();
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_moonAngle));
+    _mvMatrix.translate(new Vector3(5.0, 0.0, 0.0));
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
-    _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _texture);
+    _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _moonTexture);
     _gl.uniform1i(_uSampler, 0);
 
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _moonVertexPositionBuffer);
@@ -403,10 +506,46 @@ class Lesson11 {
 
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _moonVertexIndexBuffer);
     _setMatrixUniforms();
-    _gl.drawElements(webgl.RenderingContext.TRIANGLES, _vertexCount, webgl.RenderingContext.UNSIGNED_SHORT, 0);
+    _gl.drawElements(webgl.RenderingContext.TRIANGLES, _moonVertexCount, webgl.RenderingContext.UNSIGNED_SHORT, 0);
+    _mvPopMatrix();
+
+
+    _mvPushMatrix();
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_cubeAngle));
+    _mvMatrix.translate(new Vector3(5.0, 0.0, 0.0));
+    _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
+    _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _cubeTexture);
+    _gl.uniform1i(_uSampler, 0);
+
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
+    _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
+
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
+    _gl.vertexAttribPointer(_aTextureCoord, 2, webgl.RenderingContext.FLOAT, false, 0, 0);
+
+    _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexNormalBuffer);
+    _gl.vertexAttribPointer(_aVertexNormal, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
+
+    _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _cubeVertexIndexBuffer);
+    _setMatrixUniforms();
+    _gl.drawElements(webgl.RenderingContext.TRIANGLES, _cubeVertexCount, webgl.RenderingContext.UNSIGNED_SHORT, 0);
+    _mvPopMatrix();
+
+
+    _animate(time);
 
     // keep drawing
     window.requestAnimationFrame(this.render);
+  }
+
+  void _animate(double timeNow) {
+    if (_lastTime != 0) {
+      double elapsed = timeNow - _lastTime;
+
+      _moonAngle += 0.05 * elapsed;
+      _cubeAngle += 0.05 * elapsed;
+    }
+    _lastTime = timeNow;
   }
 
 
@@ -422,6 +561,6 @@ class Lesson11 {
 
 
 void main() {
-  Lesson11 lesson = new Lesson11(document.querySelector('#drawHere'));
+  Lesson12 lesson = new Lesson12(document.querySelector('#drawHere'));
   lesson.start();
 }
