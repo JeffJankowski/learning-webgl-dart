@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lesson 11 - Dart + WebGL</title>
+</head>
+<body>
+<canvas id="drawHere" width="500" height="500"></canvas><br/>
+
+<input type="checkbox" id="lighting" checked /><label for="lighting"> Use lighting</label><br/>
+Spin the moon by dragging it with the mouse.
+<br/>
+
+<h2>Directional light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Direction:</b>
+        <td><label for="lightDirectionX">X: </label><input type="text" id="lightDirectionX" value="-1.0" />
+        <td><label for="lightDirectionY">Y: </label><input type="text" id="lightDirectionY" value="-1.0" />
+        <td><label for="lightDirectionZ">Z: </label><input type="text" id="lightDirectionZ" value="-1.0" />
+    </tr>
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="directionalR">R: </label><input type="text" id="directionalR" value="0.8" />
+        <td><label for="directionalG">G: </label><input type="text" id="directionalG" value="0.8" />
+        <td><label for="directionalB">B: </label><input type="text" id="directionalB" value="0.8" />
+    </tr>
+</table>
+
+
+<h2>Ambient light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="ambientR">R: </label><input type="text" id="ambientR" value="0.2" />
+        <td><label for="ambientG">G: </label><input type="text" id="ambientG" value="0.2" />
+        <td><label for="ambientB">B: </label><input type="text" id="ambientB" value="0.2" />
+    </tr>
+</table>
+<br/>
+
+Moon texture courtesy of <a href="http://maps.jpl.nasa.gov/">the Jet Propulsion Laboratory</a>.
+<br/>
+<br/>
+
+
+<script type="application/dart" src="Lesson-11.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>
