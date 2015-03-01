@@ -2,7 +2,7 @@
 
 Tutorials from [learningwebgl.com](http://www.learningwebgl.com) ported from "native" JavaScript to Dart.
 
-**Status:** Lessons 1-12 are functional with ongoing active development in my free time
+**Status:** Lessons 1-13 are functional with ongoing active development in my free time
 
 #### Credits
 
