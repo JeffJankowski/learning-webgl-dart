@@ -193,7 +193,6 @@ class Lesson12 {
     _uNMatrix = _gl.getUniformLocation(_shaderProgram, "uNMatrix");
     _uSampler = _gl.getUniformLocation(_shaderProgram, "uSampler");
     _uColor = _gl.getUniformLocation(_shaderProgram, "uColor");
-    _uSampler = _gl.getUniformLocation(_shaderProgram, "uSampler");
     _uUseLighting = _gl.getUniformLocation(_shaderProgram, "uUseLighting");
     _uAmbientColor = _gl.getUniformLocation(_shaderProgram, "uAmbientColor");
     _uPointLightingLocation = _gl.getUniformLocation(_shaderProgram, "uPointLightingLocation");

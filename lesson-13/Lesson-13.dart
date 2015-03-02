@@ -79,15 +79,15 @@ class Lesson13 {
     _elmPointB = document.querySelector("#pointB");
   }
 
-  ProgramWrapper _createProgram(String fsSource, String vsSource) {
+  ProgramWrapper _createProgram(String fragmentShader, String vertexShader) {
     // vertex shader compilation
     webgl.Shader vs = _gl.createShader(webgl.RenderingContext.VERTEX_SHADER);
-    _gl.shaderSource(vs, vsSource);
+    _gl.shaderSource(vs, vertexShader);
     _gl.compileShader(vs);
 
     // fragment shader compilation
     webgl.Shader fs = _gl.createShader(webgl.RenderingContext.FRAGMENT_SHADER);
-    _gl.shaderSource(fs, fsSource);
+    _gl.shaderSource(fs, fragmentShader);
     _gl.compileShader(fs);
 
     // attach shaders to a webgl. program
@@ -127,7 +127,6 @@ class Lesson13 {
     program.uNMatrix = _gl.getUniformLocation(shaderProgram, "uNMatrix");
     program.uSampler = _gl.getUniformLocation(shaderProgram, "uSampler");
     program.uColor = _gl.getUniformLocation(shaderProgram, "uColor");
-    program.uSampler = _gl.getUniformLocation(shaderProgram, "uSampler");
     program.uUseTextures = _gl.getUniformLocation(shaderProgram, "uUseTextures");
 
     program.uUseLighting = _gl.getUniformLocation(shaderProgram, "uUseLighting");
@@ -198,7 +197,7 @@ class Lesson13 {
     }
     """;
 
-    String fpVsSource = """
+    String pfVsSource = """
     attribute vec3 aVertexPosition;
     attribute vec3 aVertexNormal;
     attribute vec2 aTextureCoord;
@@ -220,7 +219,7 @@ class Lesson13 {
     }
     """;
 
-    String fpFsSource = """
+    String pfFsSource = """
     precision mediump float;
 
     varying vec2 vTextureCoord;
@@ -260,7 +259,7 @@ class Lesson13 {
     """;
 
     _perVertexShaderProgram = _createProgram(pvFsSource, pvVsSource);
-    _perFragmentShaderProgram = _createProgram(fpFsSource, fpVsSource);
+    _perFragmentShaderProgram = _createProgram(pfFsSource, pfVsSource);
   }
 
 

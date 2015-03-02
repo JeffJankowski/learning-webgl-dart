@@ -261,11 +261,10 @@ class Lesson10 {
 
       _setMatrixUniforms();
       _gl.drawArrays(webgl.RenderingContext.TRIANGLES, 0, _vertexCount);
-    }
 
-    // rotate
-    _animate(time);
-    _handleKeys();
+      _animate(time);
+      _handleKeys();
+    }
 
     // keep drawing
     window.requestAnimationFrame(this.render);
