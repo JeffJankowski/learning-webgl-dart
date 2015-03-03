@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lesson 15 - Dart + WebGL</title>
+</head>
+<body>
+<canvas id="drawHere" width="500" height="500"></canvas><br/>
+
+<input type="checkbox" id="color-map" checked /><label for="color-map"> Use color map</label><br/>
+<input type="checkbox" id="specular-map" checked /><label for="specular-map"> Use specular map</label><br/>
+<input type="checkbox" id="lighting" checked /><label for="lighting"> Use lighting</label><br/>
+
+
+<h2>Point light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Location:</b>
+        <td><label for="lightPositionX">X: </label><input type="text" id="lightPositionX" value="-10.0" />
+        <td><label for="lightPositionY">Y: </label><input type="text" id="lightPositionY" value="4.0" />
+        <td><label for="lightPositionZ">Z: </label><input type="text" id="lightPositionZ" value="-20.0" />
+    </tr>
+    <tr>
+        <td><b>Specular colour:</b>
+        <td><label for="specularR">R: </label><input type="text" id="specularR" value="5.0" />
+        <td><label for="specularG">G: </label><input type="text" id="specularG" value="5.0" />
+        <td><label for="specularB">B: </label><input type="text" id="specularB" value="5.0" />
+    </tr>
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="diffuseR">R: </label><input type="text" id="diffuseR" value="0.8" />
+        <td><label for="diffuseG">G: </label><input type="text" id="diffuseG" value="0.8" />
+        <td><label for="diffuseB">B: </label><input type="text" id="diffuseB" value="0.8" />
+    </tr>
+</table>
+
+<h2>Ambient light:</h2>
+
+<table style="border: 0; padding: 10px;">
+    <tr>
+        <td><b>Colour:</b>
+        <td><label for="ambientR">R: </label><input type="text" id="ambientR" value="0.4" />
+        <td><label for="ambientG">G: </label><input type="text" id="ambientG" value="0.4" />
+        <td><label for="ambientB">B: </label><input type="text" id="ambientB" value="0.4" />
+    </tr>
+</table>
+<br/>
+
+Earth texture courtesy of <a href="http://www.esa.int/esaEO/SEMGSY2IU7E_index_0.html">the European Space Agency/Envisat</a>.<br/><br/>
+
+
+<script type="application/dart" src="Lesson-15.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>
