@@ -398,7 +398,7 @@ class Lesson13 {
 
     _cubeVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
-    var textureCoords = [
+    List<double> textureCoords = [
         // Front face
         0.0, 0.0,
         1.0, 0.0,

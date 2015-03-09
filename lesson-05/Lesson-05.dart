@@ -40,7 +40,6 @@ class Lesson05 {
   double _zRot = 0.0;
   double _lastTime = 0.0;
 
-  var _requestAnimationFrame;
 
   Lesson05(CanvasElement canvas) {
     _viewportWidth = canvas.width;
@@ -267,7 +266,7 @@ class Lesson05 {
     _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
   }
 
-  bool render(double time) {
+  void render(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 

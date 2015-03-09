@@ -47,8 +47,6 @@ class Lesson06 {
 
   List<bool> _currentlyPressedKeys;
 
-  var _requestAnimationFrame;
-
 
   Lesson06(CanvasElement canvas) {
     // weird, but without specifying size this array throws exception on []
@@ -263,7 +261,7 @@ class Lesson06 {
   }
 
   void _initTexture() {
-    for (var i=0; i < 3; i++) {
+    for (int i=0; i < 3; i++) {
       _textures[i] = _gl.createTexture();
     }
     ImageElement image = new Element.tag('img');
@@ -301,7 +299,7 @@ class Lesson06 {
     _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  bool render(double time) {
+  void render(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
