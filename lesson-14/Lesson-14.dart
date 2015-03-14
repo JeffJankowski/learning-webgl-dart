@@ -185,7 +185,7 @@ class Lesson14 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     webgl.Program _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -284,7 +284,7 @@ class Lesson14 {
 
   void _handleLoadedTeapot(Map teapotData) {
     // NOTE: This is annoying.. I can't find a good way to force JSON decode into a list
-    // of doubles instead of mixed with ints
+    // of doubles instead of mixed with ints (List<num>)
     for (int i = 0; i < teapotData["vertexNormals"].length; i++)
       teapotData["vertexNormals"][i] *= 1.0;
     for (int i = 0; i < teapotData["vertexTextureCoords"].length; i++)
@@ -324,7 +324,7 @@ class Lesson14 {
   }
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -370,8 +370,8 @@ class Lesson14 {
       _mvMatrix = new Matrix4.identity();
 
       _mvMatrix.translate(0.0, 0.0, -40.0);
-      _mvMatrix.rotate(new Vector3(1.0, 0.0, -1.0), _degToRad(23.4));
-      _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_teapotAngle));
+      _mvMatrix.rotate(new Vector3(1.0, 0.0, -1.0), radians(23.4));
+      _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_teapotAngle));
 
       _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
       if (texture == "earth") {
@@ -400,7 +400,7 @@ class Lesson14 {
     }
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _animate(double timeNow) {
@@ -413,12 +413,8 @@ class Lesson14 {
   }
 
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

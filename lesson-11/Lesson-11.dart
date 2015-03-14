@@ -101,8 +101,6 @@ class Lesson11 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec3 aVertexNormal;
@@ -136,8 +134,6 @@ class Lesson11 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -162,7 +158,7 @@ class Lesson11 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -269,10 +265,10 @@ class Lesson11 {
 
     int deltaX = newX - _lastMouseX;
     Matrix4 newRotationMatrix = new Matrix4.identity();
-    newRotationMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(deltaX / 10.0));
+    newRotationMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(deltaX / 10.0));
 
     int deltaY = newY - _lastMouseY;
-    newRotationMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(deltaY / 10.0));
+    newRotationMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(deltaY / 10.0));
 
     // Gotcha here: matrix multiplication is NOT commutative, we need to multiply newRotationMatrix by _moonRotationMatrix
     // This will modify newRotationMatrix, but we don't care, just store the result to the global rotation matrix
@@ -349,7 +345,7 @@ class Lesson11 {
   }
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -405,16 +401,11 @@ class Lesson11 {
     _gl.drawElements(webgl.RenderingContext.TRIANGLES, _vertexCount, webgl.RenderingContext.UNSIGNED_SHORT, 0);
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
-  }
-
-
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

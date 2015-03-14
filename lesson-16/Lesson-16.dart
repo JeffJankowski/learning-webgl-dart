@@ -203,7 +203,7 @@ class Lesson16 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     webgl.Program _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -624,10 +624,10 @@ class Lesson16 {
     
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(0.0, 0.0, -5.0);
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(30.0));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(30.0));
 
     _mvPushMatrix();
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_moonAngle));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_moonAngle));
     _mvMatrix.translate(2.0, 0.0, 0.0);
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _moonTexture);
@@ -648,7 +648,7 @@ class Lesson16 {
     _mvPopMatrix();
 
     _mvPushMatrix();
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_cubeAngle));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_cubeAngle));
     _mvMatrix.translate(1.25, 0.0, 0.0);
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
@@ -673,7 +673,7 @@ class Lesson16 {
   }
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.bindFramebuffer(webgl.RenderingContext.FRAMEBUFFER, _rttFramebuffer);
     _drawSceneOnLaptopScreen();
 
@@ -690,8 +690,8 @@ class Lesson16 {
     _mvPushMatrix();
 
     _mvMatrix.translate(0.0, -0.4, -2.2);
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_laptopAngle));
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(-90.0));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_laptopAngle));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(-90.0));
 
     _gl.uniform1i(_uShowSpecularHighlights, 1); //true
     _gl.uniform3f(_uPointLightingLocation, -1, 2, -1);
@@ -751,7 +751,7 @@ class Lesson16 {
     _animate(time);
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _animate(double timeNow) {
@@ -766,12 +766,8 @@ class Lesson16 {
   }
 
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

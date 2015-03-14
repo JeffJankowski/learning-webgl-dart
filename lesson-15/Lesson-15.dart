@@ -190,7 +190,7 @@ class Lesson15 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     webgl.Program _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -355,7 +355,7 @@ class Lesson15 {
 
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -395,8 +395,8 @@ class Lesson15 {
     _mvMatrix = new Matrix4.identity();
 
     _mvMatrix.translate(0.0, 0.0, -40.0);
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, -1.0), _degToRad(23.4));
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_earthAngle));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, -1.0), radians(23.4));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_earthAngle));
 
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _earthColorMapTexture);
@@ -422,7 +422,7 @@ class Lesson15 {
     _animate(time);
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _animate(double timeNow) {
@@ -435,12 +435,8 @@ class Lesson15 {
   }
 
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

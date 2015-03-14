@@ -17,7 +17,6 @@ import 'dart:math' as math;
  */
 class Lesson07 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -45,6 +44,7 @@ class Lesson07 {
   webgl.UniformLocation _uAmbientColor;
   webgl.UniformLocation _uDirectionalColor;
 
+  //DOM elements
   InputElement _elmLighting;
   InputElement _elmAmbientR, _elmAmbientG, _elmAmbientB;
   InputElement _elmLightDirectionX, _elmLightDirectionY, _elmLightDirectionZ;
@@ -61,7 +61,6 @@ class Lesson07 {
 
 
   Lesson07(CanvasElement canvas) {
-    // weird, but without specifying size this array throws exception on []
     _currentlyPressedKeys = new List<bool>(128);
     _viewportWidth = canvas.width;
     _viewportHeight = canvas.height;
@@ -73,15 +72,6 @@ class Lesson07 {
     _initShaders();
     _initBuffers();
     _initTexture();
-
-    /*if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['mozRequestAnimationFrame']) {
-      _requestAnimationFrame = window.mozRequestAnimationFrame;
-    }*/
-    //_requestAnimationFrame = window.requestAnimationFrame;
 
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.enable(webgl.RenderingContext.DEPTH_TEST);
@@ -103,8 +93,6 @@ class Lesson07 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec3 aVertexNormal;
@@ -137,8 +125,6 @@ class Lesson07 {
       }
     }""";
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
     
@@ -163,7 +149,7 @@ class Lesson07 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -206,15 +192,10 @@ class Lesson07 {
   }
 
   void _initBuffers() {
-    // variables to store verticies, tecture coordinates and colors
-    List<double> vertices, textureCoords, vertexNormals, colors;
 
-
-    // create square
     _cubeVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
-    // fill "current buffer" with triangle verticies
-    vertices = [// Front face
+    List<double> vertices = [// Front face
       -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, // Back face
       -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, // Top face
       -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, // Bottom face
@@ -225,7 +206,7 @@ class Lesson07 {
 
     _cubeVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
-    textureCoords = [// Front face
+    List<double> textureCoords = [// Front face
       0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, // Back face
       1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, // Top face
       0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, // Bottom face
@@ -248,7 +229,7 @@ class Lesson07 {
 
     _cubeVertexNormalBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexNormalBuffer);
-    vertexNormals = [// Front face
+    List<double> vertexNormals = [// Front face
       0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, // Back face
       0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, // Top face
       0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, // Bottom face
@@ -290,7 +271,7 @@ class Lesson07 {
     _gl.uniformMatrix3fv(_uNMatrix, false, normalMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -302,8 +283,8 @@ class Lesson07 {
 
     _mvMatrix.translate(new Vector3(0.0, 0.0, _zPos));
 
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot));
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_xRot));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_yRot));
 
     // vertices
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
@@ -355,7 +336,7 @@ class Lesson07 {
     _handleKeys();
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _handleKeyDown(KeyboardEvent event) {
@@ -403,14 +384,8 @@ class Lesson07 {
     }
   }
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    DateTime d;
-    _lastTime = (new DateTime.now()).millisecondsSinceEpoch * 1.0;
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 }
 

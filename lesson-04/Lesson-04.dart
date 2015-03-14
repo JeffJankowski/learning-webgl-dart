@@ -12,7 +12,6 @@ import 'dart:typed_data';
  */
 class Lesson04 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth;
@@ -34,7 +33,9 @@ class Lesson04 {
   webgl.UniformLocation _uPMatrix;
   webgl.UniformLocation _uMVMatrix;
 
+  //current rotation of the pyramid
   double _rPyramid = 0.0;
+  //current rotation of the cube
   double _rCube = 0.0;
   double _lastTime = 0.0;
 
@@ -48,15 +49,6 @@ class Lesson04 {
 
     _initShaders();
     _initBuffers();
-
-    /*if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['webkitRequestAnimationFrame']) {
-      _requestAnimationFrame = window.webkitRequestAnimationFrame;
-    } else if (window.dynamic['mozRequestAnimationFrame']) {
-      _requestAnimationFrame = window.mozRequestAnimationFrame;
-    }*/
-    //_requestAnimationFrame = window.webkitRequestAnimationFrame;
 
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.enable(webgl.RenderingContext.DEPTH_TEST);
@@ -75,8 +67,6 @@ class Lesson04 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec4 aVertexColor;
@@ -92,8 +82,6 @@ class Lesson04 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -149,15 +137,13 @@ class Lesson04 {
   }
 
   void _initBuffers() {
-    // variables to store verticies and colors
     List<double> vertices;
-//    List<List<double>> colors;
 
     // create triangle
     _pyramidVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _pyramidVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
         // Front face
         0.0,  1.0,  0.0,
@@ -180,7 +166,7 @@ class Lesson04 {
 
     _pyramidVertexColorBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _pyramidVertexColorBuffer);
-    List<double> colors1 = [
+    List<double> colorsPyramid = [
         // Front face
         1.0, 0.0, 0.0, 1.0,
         0.0, 1.0, 0.0, 1.0,
@@ -198,14 +184,14 @@ class Lesson04 {
         0.0, 0.0, 1.0, 1.0,
         0.0, 1.0, 0.0, 1.0
     ];
-    _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(colors1), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(colorsPyramid), webgl.RenderingContext.STATIC_DRAW);
 
 
     // create square
     _cubeVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
         // Front face
         -1.0, -1.0,  1.0,
@@ -247,7 +233,7 @@ class Lesson04 {
 
     _cubeVertexColorBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexColorBuffer);
-    List<List<double>> colors2 = [
+    List<List<double>> colorsCube = [
         [1.0, 0.0, 0.0, 1.0],     // Front face
         [1.0, 1.0, 0.0, 1.0],     // Back face
         [0.0, 1.0, 0.0, 1.0],     // Top face
@@ -257,10 +243,10 @@ class Lesson04 {
     ];
     // each cube face (6 faces for one cube) consists of 4 points of the same color where each color has 4 components RGBA
     // therefore I need 4 * 4 * 6 long list of doubles
-    List<double> unpackedColors = new List.generate(4 * 4 * colors2.length, (int index) {
+    List<double> unpackedColors = new List.generate(4 * 4 * colorsCube.length, (int index) {
       // index ~/ 16 returns 0-5, that's color index
       // index % 4 returns 0-3 that's color component for each color
-      return colors2[index ~/ 16][index % 4];
+      return colorsCube[index ~/ 16][index % 4];
     }, growable: false);
     _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(unpackedColors), webgl.RenderingContext.STATIC_DRAW);
 
@@ -278,35 +264,25 @@ class Lesson04 {
   }
 
   void _setMatrixUniforms() {
-    Float32List tmpList = new Float32List(16);
-
-    _pMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uPMatrix, false, tmpList);
-
-    _mvMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
-
+    _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
+    _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
-    // field of view is 45°, width-to-height ratio, hide things closer than 0.1 or further than 100
     _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
-    // draw triangle
+    // Pyramid
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(new Vector3(-1.5, 0.0, -8.0));
 
     _mvPushMatrix();
     _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_rPyramid));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _pyramidVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
-    // color
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _pyramidVertexColorBuffer);
     _gl.vertexAttribPointer(_aVertexColor, 4, webgl.RenderingContext.FLOAT, false, 0, 0);
 
@@ -315,13 +291,12 @@ class Lesson04 {
 
     _mvPopMatrix();
 
-    // draw square
+    // Cube
     _mvMatrix.translate(new Vector3(3.0, 0.0, 0.0));
 
     _mvPushMatrix();
     _mvMatrix.rotate(new Vector3(1.0, 1.0, 1.0), radians(_rCube));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
     // color
@@ -334,23 +309,25 @@ class Lesson04 {
 
     _mvPopMatrix();
 
-    // rotate
-    double animationStep = time - _lastTime;
-    _rPyramid += (90 * animationStep) / 1000.0;
-    _rCube -= (75 * animationStep) / 1000.0;
-    _lastTime = time;
+    // increase the pyramid and cube rotation for tick
+    _animate(time);
 
     // keep drawing
-    this._renderFrame();
+    window.requestAnimationFrame(this.drawScene);
   }
 
+  void _animate(double timeNow) {
+    if (_lastTime != 0) {
+      double elapsed = timeNow - _lastTime;
+
+      _rPyramid += (90 * elapsed) / 1000.0;
+      _rCube -= (75 * elapsed) / 1000.0;
+    }
+    _lastTime = timeNow;
+  }
 
   void start() {
-    this._renderFrame();
-  }
-
-  void _renderFrame() {
-    window.requestAnimationFrame((num time) { this.render(time); });
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

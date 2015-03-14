@@ -11,7 +11,6 @@ import 'dart:typed_data';
  */
 class Lesson01 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Buffer _triangleVertexPositionBuffer;
   webgl.Buffer _squareVertexPositionBuffer;
@@ -107,14 +106,14 @@ class Lesson01 {
   }
 
   void _initBuffers() {
-    // variable to store verticies
+    // variable to store vertices
     List<double> vertices;
 
     // create triangle
     _triangleVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
        0.0,  1.0,  0.0,
       -1.0, -1.0,  0.0,
@@ -122,14 +121,11 @@ class Lesson01 {
     ];
     _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(vertices), webgl.RenderingContext.STATIC_DRAW);
 
-    //_triangleVertexPositionBuffer.itemSize = 3;
-    //_triangleVertexPositionBuffer.numItems = 3;
-
     // create square
     _squareVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
          1.0,  1.0,  0.0,
         -1.0,  1.0,  0.0,
@@ -141,16 +137,11 @@ class Lesson01 {
   }
 
   void _setMatrixUniforms() {
-    Float32List tmpList = new Float32List(16);
-
-    _pMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uPMatrix, false, tmpList);
-
-    _mvMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
+    _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
+    _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render() {
+  void drawScene() {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -180,5 +171,5 @@ class Lesson01 {
 
 void main() {
   Lesson01 lesson = new Lesson01(document.querySelector('#drawHere'));
-  lesson.render();
+  lesson.drawScene();
 }

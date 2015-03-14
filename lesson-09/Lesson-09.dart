@@ -17,7 +17,6 @@ import 'dart:math' as math;
  */
 class Lesson09 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -77,8 +76,6 @@ class Lesson09 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec2 aTextureCoord;
@@ -94,8 +91,6 @@ class Lesson09 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -157,14 +152,11 @@ class Lesson09 {
   }
 
   void _initBuffers() {
-    // variables to store vertices and texture coordinates
-    List<double> vertices, textureCoords, colors;
 
     // create star
     _starVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _starVertexPositionBuffer);
-    // fill "current buffer" with triangle vertices
-    vertices = [
+    List<double> vertices = [
         -1.0, -1.0,  0.0,
         1.0, -1.0,  0.0,
         -1.0,  1.0,  0.0,
@@ -174,7 +166,7 @@ class Lesson09 {
 
     _starVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _starVertexTextureCoordBuffer);
-    textureCoords = [
+    List<double> textureCoords = [
         0.0, 0.0,
         1.0, 0.0,
         0.0, 1.0,
@@ -211,6 +203,7 @@ class Lesson09 {
     _gl.texImage2D(webgl.RenderingContext.TEXTURE_2D, 0, webgl.RenderingContext.RGBA, webgl.RenderingContext.RGBA, webgl.RenderingContext.UNSIGNED_BYTE, img);
     _gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MAG_FILTER, webgl.RenderingContext.LINEAR);
     _gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MIN_FILTER, webgl.RenderingContext.LINEAR);
+    // No need for Mipmap
     //_gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MIN_FILTER, webgl.RenderingContext.LINEAR_MIPMAP_NEAREST);
     //_gl.generateMipmap(webgl.RenderingContext.TEXTURE_2D);
 
@@ -222,7 +215,7 @@ class Lesson09 {
     _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -234,11 +227,11 @@ class Lesson09 {
 
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(new Vector3(0.0, 0.0, _zoom));
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_tilt));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_tilt));
 
     // transform/draw each star
     for (Star s in _stars) {
-      _renderStar(s);
+      _drawSceneStar(s);
       _spin += 0.1;
     }
 
@@ -247,7 +240,7 @@ class Lesson09 {
     _handleKeys();
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _handleKeyDown(KeyboardEvent event) {
@@ -288,14 +281,8 @@ class Lesson09 {
     }
   }
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    DateTime d;
-    //_lastTime = (new DateTime.now()).millisecondsSinceEpoch * 1.0;
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _initWorldObjects() {
@@ -307,16 +294,16 @@ class Lesson09 {
   }
 
   // replacement method for Star.prototype.draw in JS version
-  void _renderStar(Star star) {
+  void _drawSceneStar(Star star) {
     _mvPushMatrix();
 
     // Move to the star's position
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(star.angle));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(star.angle));
     _mvMatrix.translate(new Vector3(star.dist, 0.0, 0.0));
 
     // Rotate back so that the star is facing the viewer
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(-star.angle));
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(-_tilt));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(-star.angle));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(-_tilt));
 
     if (_elmTwinkle.checked) {
       // Draw a non-rotating star in the alternate "twinkling" color
@@ -325,7 +312,7 @@ class Lesson09 {
     }
 
     // All stars spin around the Z axis at the same rate
-    _mvMatrix.rotate(new Vector3(0.0, 0.0, 1.0), _degToRad(_spin));
+    _mvMatrix.rotate(new Vector3(0.0, 0.0, 1.0), radians(_spin));
 
     // Draw the star in its main color
     _gl.uniform3f(_uColor, star.r, star.g, star.b);

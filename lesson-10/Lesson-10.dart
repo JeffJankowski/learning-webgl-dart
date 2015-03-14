@@ -17,7 +17,6 @@ import 'dart:math' as math;
  */
 class Lesson10 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -76,8 +75,6 @@ class Lesson10 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec2 aTextureCoord;
@@ -93,8 +90,6 @@ class Lesson10 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -181,8 +176,6 @@ class Lesson10 {
     _gl.texImage2D(webgl.RenderingContext.TEXTURE_2D, 0, webgl.RenderingContext.RGBA, webgl.RenderingContext.RGBA, webgl.RenderingContext.UNSIGNED_BYTE, img);
     _gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MAG_FILTER, webgl.RenderingContext.LINEAR);
     _gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MIN_FILTER, webgl.RenderingContext.LINEAR);
-    //_gl.texParameteri(webgl.RenderingContext.TEXTURE_2D, webgl.RenderingContext.TEXTURE_MIN_FILTER, webgl.RenderingContext.LINEAR_MIPMAP_NEAREST);
-    //_gl.generateMipmap(webgl.RenderingContext.TEXTURE_2D);
 
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, null);
   }
@@ -236,7 +229,7 @@ class Lesson10 {
   }
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -245,8 +238,8 @@ class Lesson10 {
       _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
       _mvMatrix = new Matrix4.identity();
-      _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(-_pitch));
-      _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(-_yaw));
+      _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(-_pitch));
+      _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(-_yaw));
       _mvMatrix.translate(-_xPos, -_yPos, -_zPos);
 
       _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
@@ -267,7 +260,7 @@ class Lesson10 {
     }
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _handleKeyDown(KeyboardEvent event) {
@@ -283,11 +276,11 @@ class Lesson10 {
       double elapsed = timeNow - _lastTime;
 
       if (_speed != 0) {
-        _xPos -= math.sin(_degToRad(_yaw)) * _speed * elapsed;
-        _zPos -= math.cos(_degToRad(_yaw)) * _speed * elapsed;
+        _xPos -= math.sin(radians(_yaw)) * _speed * elapsed;
+        _zPos -= math.cos(radians(_yaw)) * _speed * elapsed;
 
         _joggingAngle += elapsed * 0.6; // 0.6 "fiddle factor" - makes it feel more realistic :-)
-        _yPos = math.sin(_degToRad(_joggingAngle)) / 20 + 0.4;
+        _yPos = math.sin(radians(_joggingAngle)) / 20 + 0.4;
       }
 
       _yaw += _yawRate * elapsed;
@@ -298,7 +291,7 @@ class Lesson10 {
   }
 
   void _handleKeys() {
-    if (_currentlyPressedKeys[33] != null) {
+    if (_currentlyPressedKeys[33] != null && _currentlyPressedKeys[33]) {
       // Page Up
       _pitchRate = 0.1;
     } else if (_currentlyPressedKeys[34] != null && _currentlyPressedKeys[34]) {
@@ -333,14 +326,9 @@ class Lesson10 {
     }
   }
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
-
 
 }
 

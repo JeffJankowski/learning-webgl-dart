@@ -17,7 +17,6 @@ import 'dart:math' as math;
  */
 class Lesson06 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -38,10 +37,12 @@ class Lesson06 {
   webgl.UniformLocation _uMVMatrix;
   webgl.UniformLocation _samplerUniform;
 
-  double _xRot = 0.0, _xSpeed = 0.0,
-         _yRot = 0.0, _ySpeed = 0.0,
-         _zPos = -5.0;
 
+  double _xRot = 0.0, _xSpeed = 0.0, //x-rotation angle and speed
+         _yRot = 0.0, _ySpeed = 0.0, //y-rotation angle and speed
+         _zPos = -5.0;               //z-position (zoom)
+
+  //index of current texture in _textures list (each uses a different drawSceneing filter)
   int _filter = 0;
   double _lastTime = 0.0;
 
@@ -63,27 +64,15 @@ class Lesson06 {
     _initBuffers();
     _initTexture();
 
-    /*if (window.dynamic['requestAnimationFrame']) {
-      _requestAnimationFrame = window.requestAnimationFrame;
-    } else if (window.dynamic['webkitRequestAnimationFrame']) {
-      _requestAnimationFrame = window.webkitRequestAnimationFrame;
-    } else if (window.dynamic['mozRequestAnimationFrame']) {
-      _requestAnimationFrame = window.mozRequestAnimationFrame;
-    }*/
-    //_requestAnimationFrame = window.webkitRequestAnimationFrame;
-
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
     _gl.enable(webgl.RenderingContext.DEPTH_TEST);
 
     document.onKeyDown.listen(this._handleKeyDown);
     document.onKeyUp.listen(this._handleKeyUp);
-
   }
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec2 aTextureCoord;
@@ -99,8 +88,6 @@ class Lesson06 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -123,7 +110,7 @@ class Lesson06 {
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a webgl. program
+    // attach shaders to a webgl program
     _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -159,15 +146,11 @@ class Lesson06 {
   }
 
   void _initBuffers() {
-    // variables to store verticies, tecture coordinates and colors
-    List<double> vertices, textureCoords, colors;
 
-
-    // create square
+    //create crate -- teehee
     _cubeVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
-    // fill "current buffer" with triangle verticies
-    vertices = [
+    List<double> vertices = [
         // Front face
         -1.0, -1.0,  1.0,
          1.0, -1.0,  1.0,
@@ -208,7 +191,7 @@ class Lesson06 {
 
     _cubeVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
-    textureCoords = [
+    List<double> textureCoords = [
         // Front face
         0.0, 0.0,
         1.0, 0.0,
@@ -294,28 +277,25 @@ class Lesson06 {
   }
 
   void _setMatrixUniforms() {
-
     _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
     _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
     // field of view is 45°, width-to-height ratio, hide things closer than 0.1 or further than 100
     _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
-    // draw triangle
     _mvMatrix = new Matrix4.identity();
 
-    _mvMatrix.translate(new Vector3(0.0, 0.0, _zPos));
+    _mvMatrix.translate(new Vector3(0.0, 0.0, _zPos)); //zoom
 
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot));
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot));
-    //_mvMatrix.rotate(_degToRad(_zRot), new Vector3.fromList([0, 0, 1]));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot)); //rotation around x axis
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot)); //rotation around y axis
 
-    // verticies
+    // vertices
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
 
@@ -334,10 +314,11 @@ class Lesson06 {
 
     // rotate
     _animate(time);
+    // process pressed keys
     _handleKeys();
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _handleKeyDown(KeyboardEvent event) {
@@ -399,9 +380,7 @@ class Lesson06 {
   }
 
   void start() {
-    DateTime d;
-    _lastTime = (new DateTime.now()).millisecondsSinceEpoch * 1.0;
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

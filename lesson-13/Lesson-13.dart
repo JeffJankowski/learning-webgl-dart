@@ -517,7 +517,7 @@ class Lesson13 {
   }
 
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -561,10 +561,10 @@ class Lesson13 {
 
     _mvMatrix.translate(0.0, 0.0, -5.0);
 
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(30.0));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(30.0));
 
     _mvPushMatrix();
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_moonAngle));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_moonAngle));
     _mvMatrix.translate(new Vector3(2.0, 0.0, 0.0));
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _moonTexture);
@@ -586,7 +586,7 @@ class Lesson13 {
 
 
     _mvPushMatrix();
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_cubeAngle));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_cubeAngle));
     _mvMatrix.translate(new Vector3(1.25, 0.0, 0.0));
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _cubeTexture);
@@ -610,7 +610,7 @@ class Lesson13 {
     _animate(time);
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _animate(double timeNow) {
@@ -623,13 +623,8 @@ class Lesson13 {
     _lastTime = timeNow;
   }
 
-
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }

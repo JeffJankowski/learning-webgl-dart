@@ -12,7 +12,6 @@ import 'dart:typed_data';
  */
 class Lesson03 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _dimensions = 3;
@@ -34,8 +33,11 @@ class Lesson03 {
   webgl.UniformLocation _uPMatrix;
   webgl.UniformLocation _uMVMatrix;
 
+  //current triangle rotation
   double _rTri = 0.0;
+  //current square rotation
   double _rSquare = 0.0;
+  //last tick
   double _lastTime = 0.0;
 
 
@@ -66,8 +68,6 @@ class Lesson03 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec4 aVertexColor;
@@ -83,8 +83,6 @@ class Lesson03 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -140,14 +138,14 @@ class Lesson03 {
   }
 
   void _initBuffers() {
-    // variables to store verticies and colors
+    // variables to store vertices and colors
     List<double> vertices, colors;
 
     // create triangle
     _triangleVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
        0.0,  1.0,  0.0,
       -1.0, -1.0,  0.0,
@@ -164,14 +162,11 @@ class Lesson03 {
     ];
     _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(colors), webgl.RenderingContext.STATIC_DRAW);
 
-    //_triangleVertexPositionBuffer.itemSize = 3;
-    //_triangleVertexPositionBuffer.numItems = 3;
-
     // create square
     _squareVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
+    // fill "current buffer" with triangle vertices
     vertices = [
          1.0,  1.0,  0.0,
         -1.0,  1.0,  0.0,
@@ -192,33 +187,27 @@ class Lesson03 {
   }
 
   void _setMatrixUniforms() {
-    Float32List tmpList = new Float32List(16);
-
-    _pMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uPMatrix, false, tmpList);
-
-    _mvMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
+    _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
+    _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
     // field of view is 45°, width-to-height ratio, hide things closer than 0.1 or further than 100
     _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
-    // draw triangle
+    // Triangle
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(new Vector3(-1.5, 0.0, -7.0));
 
     _mvPushMatrix();
+    //rotate triangle around Y axis
     _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_rTri));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, _dimensions, webgl.RenderingContext.FLOAT, false, 0, 0);
-    // color
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexColorBuffer);
     _gl.vertexAttribPointer(_aVertexColor, 4, webgl.RenderingContext.FLOAT, false, 0, 0);
 
@@ -227,14 +216,12 @@ class Lesson03 {
 
     _mvPopMatrix();
 
-    //print(_gl.getError());
-    // draw square
+    // Square
     _mvMatrix.translate(new Vector3(3.0, 0.0, 0.0));
 
     _mvPushMatrix();
     _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_rSquare));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, _dimensions, webgl.RenderingContext.FLOAT, false, 0, 0);
     // color
@@ -246,23 +233,27 @@ class Lesson03 {
 
     _mvPopMatrix();
 
-    // rotate
-    double animationStep = time - _lastTime;
-    _rTri += (90 * animationStep) / 1000.0;
-    _rSquare += (75 * animationStep) / 1000.0;
-    _lastTime = time;
+    // rotate the square and triangle for tick
+    _animate(time);
 
     // keep drawing
-    this._renderFrame();
+    window.requestAnimationFrame(this.drawScene);
+  }
+
+  void _animate(double timeNow) {
+    if (_lastTime != 0) {
+      double elapsed = timeNow - _lastTime;
+
+      _rTri += (90 * elapsed) / 1000.0;
+      _rSquare += (75 * elapsed) / 1000.0;
+    }
+    _lastTime = timeNow;
   }
 
   void start() {
-    this._renderFrame();
+    window.requestAnimationFrame(this.drawScene);
   }
 
-  void _renderFrame() {
-    window.requestAnimationFrame((num time) { this.render(time); });
-  }
 
 }
 

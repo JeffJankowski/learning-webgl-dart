@@ -11,7 +11,6 @@ import 'dart:typed_data';
  */
 class Lesson02 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _dimensions = 3;
@@ -47,8 +46,6 @@ class Lesson02 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec4 aVertexColor;
@@ -64,8 +61,6 @@ class Lesson02 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -76,17 +71,14 @@ class Lesson02 {
     }
     """;
 
-    // vertex shader compilation
     webgl.Shader vs = _gl.createShader(webgl.RenderingContext.VERTEX_SHADER);
     _gl.shaderSource(vs, vsSource);
     _gl.compileShader(vs);
 
-    // fragment shader compilation
     webgl.Shader fs = _gl.createShader(webgl.RenderingContext.FRAGMENT_SHADER);
     _gl.shaderSource(fs, fsSource);
     _gl.compileShader(fs);
 
-    // attach shaders to a WebGL program
     _shaderProgram = _gl.createProgram();
     _gl.attachShader(_shaderProgram, vs);
     _gl.attachShader(_shaderProgram, fs);
@@ -121,14 +113,12 @@ class Lesson02 {
   }
 
   void _initBuffers() {
-    // variable to store verticies
     List<double> vertices;
 
-    // create triangle
+    //Triangle
     _triangleVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
     vertices = [
        0.0,  1.0,  0.0,
       -1.0, -1.0,  0.0,
@@ -145,14 +135,11 @@ class Lesson02 {
     ];
     _gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(colors), webgl.RenderingContext.STATIC_DRAW);
 
-    //_triangleVertexPositionBuffer.itemSize = 3;
-    //_triangleVertexPositionBuffer.numItems = 3;
 
-    // create square
+    //Square
     _squareVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexPositionBuffer);
 
-    // fill "current buffer" with triangle verticies
     vertices = [
          1.0,  1.0,  0.0,
         -1.0,  1.0,  0.0,
@@ -164,6 +151,7 @@ class Lesson02 {
     _squareVertexColorBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexColorBuffer);
 
+    //const color for each vertex color
     colors = new List();
     for (int i=0; i < 4; i++) {
       colors.addAll([0.5, 0.5, 1.0, 1.0]);
@@ -173,16 +161,11 @@ class Lesson02 {
   }
 
   void _setMatrixUniforms() {
-    Float32List tmpList = new Float32List(16);
-
-    _pMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uPMatrix, false, tmpList);
-
-    _mvMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
+    _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
+    _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render() {
+  void drawScene() {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
@@ -193,7 +176,6 @@ class Lesson02 {
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(new Vector3(-1.5, 0.0, -7.0));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _triangleVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, _dimensions, webgl.RenderingContext.FLOAT, false, 0, 0);
     // color
@@ -206,7 +188,6 @@ class Lesson02 {
     // draw square
     _mvMatrix.translate(new Vector3(3.0, 0.0, 0.0));
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _squareVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, _dimensions, webgl.RenderingContext.FLOAT, false, 0, 0);
     // color
@@ -222,5 +203,5 @@ class Lesson02 {
 
 void main() {
   Lesson02 lesson = new Lesson02(document.querySelector('#drawHere'));
-  lesson.render();
+  lesson.drawScene();
 }

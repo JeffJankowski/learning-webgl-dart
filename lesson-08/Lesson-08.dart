@@ -17,7 +17,6 @@ import 'dart:math' as math;
  */
 class Lesson08 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -64,7 +63,6 @@ class Lesson08 {
 
 
   Lesson08(CanvasElement canvas) {
-    // weird, but without specifying size this array throws exception on []
     _currentlyPressedKeys = new List<bool>(128);
     _viewportWidth = canvas.width;
     _viewportHeight = canvas.height;
@@ -99,8 +97,6 @@ class Lesson08 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec3 aVertexNormal;
@@ -133,8 +129,6 @@ class Lesson08 {
       }
     }""";
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
     
@@ -205,15 +199,10 @@ class Lesson08 {
   }
 
   void _initBuffers() {
-    // variables to store vertices, texture coordinates and colors
-    List<double> vertices, textureCoords, vertexNormals, colors;
 
-
-    // create square
     _cubeVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
-    // fill "current buffer" with triangle vertices
-    vertices = [// Front face
+    List<double> vertices = [// Front face
       -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, // Back face
       -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, // Top face
       -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, // Bottom face
@@ -224,7 +213,7 @@ class Lesson08 {
 
     _cubeVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexTextureCoordBuffer);
-    textureCoords = [// Front face
+    List<double> textureCoords = [// Front face
       0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, // Back face
       1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, // Top face
       0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, // Bottom face
@@ -247,7 +236,7 @@ class Lesson08 {
 
     _cubeVertexNormalBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexNormalBuffer);
-    vertexNormals = [// Front face
+    List<double> vertexNormals = [// Front face
       0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, // Back face
       0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, // Top face
       0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, // Bottom face
@@ -289,20 +278,19 @@ class Lesson08 {
     _gl.uniformMatrix3fv(_uNMatrix, false, normalMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
     // field of view is 45°, width-to-height ratio, hide things closer than 0.1 or further than 100
     _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
-    // draw triangle
     _mvMatrix = new Matrix4.identity();
 
     _mvMatrix.translate(new Vector3(0.0, 0.0, _zPos));
 
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), _degToRad(_xRot));
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), _degToRad(_yRot));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_xRot));
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_yRot));
 
     // vertices
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
@@ -367,7 +355,7 @@ class Lesson08 {
     _handleKeys();
 
     // keep drawing
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _handleKeyDown(KeyboardEvent event) {
@@ -415,14 +403,8 @@ class Lesson08 {
     }
   }
 
-  double _degToRad(double degrees) {
-    return degrees * math.PI / 180;
-  }
-
   void start() {
-    DateTime d;
-    _lastTime = (new DateTime.now()).millisecondsSinceEpoch * 1.0;
-    window.requestAnimationFrame(this.render);
+    window.requestAnimationFrame(this.drawScene);
   }
 }
 

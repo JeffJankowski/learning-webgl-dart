@@ -14,7 +14,6 @@ import 'dart:typed_data';
  */
 class Lesson05 {
 
-  CanvasElement _canvas;
   webgl.RenderingContext _gl;
   webgl.Program _shaderProgram;
   int _viewportWidth, _viewportHeight;
@@ -59,8 +58,6 @@ class Lesson05 {
 
 
   void _initShaders() {
-    // vertex shader source code. uPosition is our variable that we'll
-    // use to create animation
     String vsSource = """
     attribute vec3 aVertexPosition;
     attribute vec2 aTextureCoord;
@@ -76,8 +73,6 @@ class Lesson05 {
     }
     """;
 
-    // fragment shader source code. uColor is our variable that we'll
-    // use to animate color
     String fsSource = """
     precision mediump float;
 
@@ -136,13 +131,12 @@ class Lesson05 {
   }
 
   void _initBuffers() {
-    // variables to store verticies, tecture coordinates and colors
+    // variables to store vertices, texture coordinates and colors
     List<double> vertices, textureCoords, colors;
 
-    // create square
+    // create cube
     _cubeVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
-    // fill "current buffer" with triangle verticies
     vertices = [
         // Front face
         -1.0, -1.0,  1.0,
@@ -241,8 +235,6 @@ class Lesson05 {
     ImageElement image = new Element.tag('img');
     image.onLoad.listen((e) {
       _handleLoadedTexture(_neheTexture, image);
-      // start rendering when texture is loaded
-      this.start();
     });
     image.src = "nehe.gif";
   }
@@ -257,31 +249,24 @@ class Lesson05 {
   }
 
   void _setMatrixUniforms() {
-    Float32List tmpList = new Float32List(16);
-
-    _pMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uPMatrix, false, tmpList);
-
-    _mvMatrix.copyIntoArray(tmpList);
-    _gl.uniformMatrix4fv(_uMVMatrix, false, tmpList);
+    _gl.uniformMatrix4fv(_uPMatrix, false, _pMatrix.storage);
+    _gl.uniformMatrix4fv(_uMVMatrix, false, _mvMatrix.storage);
   }
 
-  void render(double time) {
+  void drawScene(double time) {
     _gl.viewport(0, 0, _viewportWidth, _viewportHeight);
     _gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
 
     // field of view is 45°, width-to-height ratio, hide things closer than 0.1 or further than 100
-//    Matrix4.perspective(45, _viewportWidth / _viewportHeight, 0.1, 100.0, _pMatrix);
     _pMatrix = makePerspectiveMatrix(radians(45.0), _viewportWidth / _viewportHeight, 0.1, 100.0);
 
     _mvMatrix = new Matrix4.identity();
     _mvMatrix.translate(new Vector3(0.0, 0.0, -5.0));
 
-    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_xRot));
-    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_yRot));
-    _mvMatrix.rotate(new Vector3(0.0, 0.0, 1.0), radians(_zRot));
+    _mvMatrix.rotate(new Vector3(1.0, 0.0, 0.0), radians(_xRot)); //rotate around x axis
+    _mvMatrix.rotate(new Vector3(0.0, 1.0, 0.0), radians(_yRot)); //rotate around y axis
+    _mvMatrix.rotate(new Vector3(0.0, 0.0, 1.0), radians(_zRot)); //rotate around z axis
 
-    // verticies
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _cubeVertexPositionBuffer);
     _gl.vertexAttribPointer(_aVertexPosition, 3, webgl.RenderingContext.FLOAT, false, 0, 0);
 
@@ -297,35 +282,31 @@ class Lesson05 {
     _setMatrixUniforms();
     _gl.drawElements(webgl.RenderingContext.TRIANGLES, 36, webgl.RenderingContext.UNSIGNED_SHORT, 0);
 
-    // rotate
+    // rotate cube
     _animate(time);
 
     // keep drawing
-    this._renderFrame();
-  }
-
-  void start() {
-    this._renderFrame();
-  }
-
-  void _renderFrame() {
-    window.requestAnimationFrame((num time) { this.render(time); });
+    window.requestAnimationFrame(this.drawScene);
   }
 
   void _animate(double time) {
     if (_lastTime != 0) {
-        double animationStep = time - _lastTime;
+      double animationStep = time - _lastTime;
 
-        _xRot += (90 * animationStep) / 1000.0;
-        _yRot += (90 * animationStep) / 1000.0;
-        _zRot += (90 * animationStep) / 1000.0;
+      _xRot += (90 * animationStep) / 1000.0;
+      _yRot += (90 * animationStep) / 1000.0;
+      _zRot += (90 * animationStep) / 1000.0;
     }
     _lastTime = time;
+  }
+
+  void start() {
+    window.requestAnimationFrame(this.drawScene);
   }
 
 }
 
 void main() {
   Lesson05 lesson = new Lesson05(document.querySelector('#drawHere'));
-//  lesson.start();
+  lesson.start();
 }
