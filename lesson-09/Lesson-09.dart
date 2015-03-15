@@ -231,7 +231,7 @@ class Lesson09 {
 
     // transform/draw each star
     for (Star s in _stars) {
-      _drawSceneStar(s);
+      _drawStar(s);
       _spin += 0.1;
     }
 
@@ -294,7 +294,7 @@ class Lesson09 {
   }
 
   // replacement method for Star.prototype.draw in JS version
-  void _drawSceneStar(Star star) {
+  void _drawStar(Star star) {
     _mvPushMatrix();
 
     // Move to the star's position
@@ -308,7 +308,7 @@ class Lesson09 {
     if (_elmTwinkle.checked) {
       // Draw a non-rotating star in the alternate "twinkling" color
       _gl.uniform3f(_uColor, star.twinkleR, star.twinkleG, star.twinkleB);
-      _drawStar();
+      _renderStar();
     }
 
     // All stars spin around the Z axis at the same rate
@@ -316,12 +316,15 @@ class Lesson09 {
 
     // Draw the star in its main color
     _gl.uniform3f(_uColor, star.r, star.g, star.b);
-    _drawStar();
+    _renderStar();
 
     _mvPopMatrix();
   }
 
-  void _drawStar() {
+  /**
+   * Do the actual webgl drawing of star geometry and applying the texture.
+   */
+  void _renderStar() {
     _gl.activeTexture(webgl.RenderingContext.TEXTURE0);
     _gl.bindTexture(webgl.RenderingContext.TEXTURE_2D, _texture);
     _gl.uniform1i(_uSampler, 0);
