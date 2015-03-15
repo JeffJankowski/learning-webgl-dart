@@ -283,26 +283,21 @@ class Lesson14 {
   }
 
   void _handleLoadedTeapot(Map teapotData) {
-    // NOTE: This is annoying.. I can't find a good way to force JSON decode into a list
-    // of doubles instead of mixed with ints (List<num>)
-    for (int i = 0; i < teapotData["vertexNormals"].length; i++)
-      teapotData["vertexNormals"][i] *= 1.0;
-    for (int i = 0; i < teapotData["vertexTextureCoords"].length; i++)
-      teapotData["vertexTextureCoords"][i] *= 1.0;
-    for (int i = 0; i < teapotData["vertexPositions"].length; i++)
-      teapotData["vertexPositions"][i] *= 1.0;
+    // NOTE: The JSON library decodes into a List<num> which contains a mix of int and double types wherever possible
+    //       without losing precision. Float32List.fromList() is picky and throws an error instead of doing a simple
+    //       downcast. Therefore, we need to convert the list, which is what map(...) does.
 
     _teapotVertexNormalBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _teapotVertexNormalBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexNormals"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexNormals"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _teapotVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _teapotVertexTextureCoordBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexTextureCoords"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexTextureCoords"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _teapotVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _teapotVertexPositionBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexPositions"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(teapotData["vertexPositions"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _teapotVertexIndexBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _teapotVertexIndexBuffer);

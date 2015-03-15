@@ -563,26 +563,21 @@ class Lesson16 {
   }
 
   void _handleLoadedLaptop(Map laptopData) {
-    // NOTE: This is annoying.. I can't find a good way to force JSON decode into a list
-    // of doubles instead of mixed with ints
-    for (int i = 0; i < laptopData["vertexNormals"].length; i++)
-      laptopData["vertexNormals"][i] *= 1.0;
-    for (int i = 0; i < laptopData["vertexTextureCoords"].length; i++)
-      laptopData["vertexTextureCoords"][i] *= 1.0;
-    for (int i = 0; i < laptopData["vertexPositions"].length; i++)
-      laptopData["vertexPositions"][i] *= 1.0;
+    // NOTE: The JSON library decodes into a List<num> which contains a mix of int and double types wherever possible
+    //       without losing precision. Float32List.fromList() is picky and throws an error instead of doing a simple
+    //       downcast. Therefore, we need to convert the list, which is what map(...) does.
 
     _laptopVertexNormalBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _laptopVertexNormalBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexNormals"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexNormals"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _laptopVertexTextureCoordBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _laptopVertexTextureCoordBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexTextureCoords"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexTextureCoords"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _laptopVertexPositionBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, _laptopVertexPositionBuffer);
-    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexPositions"]), webgl.RenderingContext.STATIC_DRAW);
+    _gl.bufferData(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(laptopData["vertexPositions"].map((x) => x.toDouble()).toList()), webgl.RenderingContext.STATIC_DRAW);
 
     _laptopVertexIndexBuffer = _gl.createBuffer();
     _gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, _laptopVertexIndexBuffer);
